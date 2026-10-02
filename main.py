@@ -1,27 +1,40 @@
 import asyncio
 import logging
 import os
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
 import yt_dlp
 
 # ==================== НАСТРОЙКИ ====================
-BOT_TOKEN = "8927203299:AAFCWEE7k1safBfWdykt3xcMZe8SLaLw7oY"
-CHANNEL_ID = "@musique_mp3"
-CHANNEL_LINK = "https://t.me/musique_mp3"
-MAX_DURATION_SEC = 600  # Ограничение длительности (10 минут)
+BOT_TOKEN = "ВАШ_ТОКЕН_ОТ_BOTFATHER"
+CHANNEL_ID = "@ВАШ_КАНАЛ"
+CHANNEL_LINK = "https://t.me/ВАШ_КАНАЛ"
+MAX_DURATION_SEC = 600
 # ===================================================
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Создаём папку для временного сохранения скачанных аудио
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
+# --- Заглушка для бесплатного тарифа Render ---
+async def handle_ping(request):
+    return web.Response(text="Bot is alive!")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+# --- Логика проверки подписки ---
 async def check_subscription(user_id: int) -> bool:
-    """Проверяет подписку пользователя на канал."""
     try:
         member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
         return member.status in ["member", "administrator", "creator"]
@@ -30,14 +43,12 @@ async def check_subscription(user_id: int) -> bool:
         return False
 
 def get_subscribe_keyboard():
-    """Клавиатура с призывом подписаться."""
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📢 Подписаться на канал", url=CHANNEL_LINK)],
         [InlineKeyboardButton(text="✅ Я подписался", callback_data="check_sub")]
     ])
 
 def download_audio_sync(url: str, user_id: int) -> dict:
-    """Загрузка аудио через yt-dlp в фоновом потоке."""
     output_template = f"downloads/{user_id}_%(id)s.%(ext)s"
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -81,7 +92,6 @@ async def cmd_start(message: types.Message):
 async def handle_link(message: types.Message):
     user_id = message.from_user.id
 
-    # 1. Проверка подписки на канал
     if not await check_subscription(user_id):
         await message.answer(
             "🔒 **Чтобы скачивать аудио, подпишитесь на наш канал!**\n\n"
@@ -91,11 +101,9 @@ async def handle_link(message: types.Message):
         )
         return
 
-    # 2. Скачивание аудио
     status_msg = await message.answer("⏳ **Загружаю и обрабатываю трек...**", parse_mode="Markdown")
     
     try:
-        # Выполняем загрузку без блокировки основного потока бота
         res = await asyncio.to_thread(download_audio_sync, message.text.strip(), user_id)
         
         if res['status'] == 'error':
@@ -114,8 +122,6 @@ async def handle_link(message: types.Message):
                 caption="🎵 Скачано через нашего бота!"
             )
             await status_msg.delete()
-            
-            # Удаляем файл с сервера после отправки
             os.remove(filepath)
         else:
             await status_msg.edit_text("❌ Не удалось обработать аудио. Попробуйте другую ссылку.")
@@ -139,8 +145,10 @@ async def callback_check_sub(callback: types.CallbackQuery):
 
 async def main():
     logging.basicConfig(level=logging.INFO)
+    await start_web_server()
     print("Бот-скачиватель MP3 запущен!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
+ 
