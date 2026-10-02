@@ -8,7 +8,7 @@ import yt_dlp
 
 # ==================== НАСТРОЙКИ ====================
 BOT_TOKEN = "8927203299:AAFCWEE7k1safBfWdykt3xcMZe8SLaLw7oY"
-CHANNEL_ID = "@musique_mp3bot"
+CHANNEL_ID = "@my_channel""@musique_mp3bot"
 CHANNEL_LINK = "t.me/musique_mp3"
 MAX_DURATION_SEC = 600  # Ограничение длительности (10 минут)
 # ===================================================
