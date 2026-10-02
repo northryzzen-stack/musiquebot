@@ -89,7 +89,7 @@ def download_audio_sync(url: str, user_id: int) -> dict:
         
     
 
-        }
+        
     
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
