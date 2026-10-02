@@ -68,11 +68,8 @@ def download_audio_sync(url: str, user_id: int) -> dict:
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android', 'mweb'],
+                'player_client': ['ios', 'android_vr']
             }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
         }
     }
 
@@ -85,6 +82,7 @@ def download_audio_sync(url: str, user_id: int) -> dict:
             'title': info.get('title', 'Аудиотрек'),
             'performer': info.get('uploader', 'Music Bot')
         }
+
 
         
     
