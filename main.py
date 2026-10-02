@@ -54,7 +54,7 @@ def get_subscribe_keyboard():
 
 def download_audio_sync(url: str, user_id: int) -> dict:
     output_template = f"downloads/{user_id}_%(id)s.%(ext)s"
-        ydl_opts = {
+    ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -65,10 +65,27 @@ def download_audio_sync(url: str, user_id: int) -> dict:
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
+        'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios']
+                'player_client': ['ios', 'android', 'mweb'],
             }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+        }
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        filename = ydl.prepare_filename(info)
+        mp3_filename = os.path.splitext(filename)[0] + ".mp3"
+        return {
+            'filepath': mp3_filename,
+            'title': info.get('title', 'Аудиотрек'),
+            'performer': info.get('uploader', 'Music Bot')
+        }
+
         }
     }
 
