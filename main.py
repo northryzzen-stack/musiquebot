@@ -66,25 +66,27 @@ def download_audio_sync(url: str, user_id: int) -> dict:
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
+        'nocheckcertificate': True,
+        # Заголовок браузера, чтобы TikTok и YouTube не блокировали сервер Render
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios']
+            }
+        }
     }
-    
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        duration = info.get('duration', 0)
-        
-        if duration and duration > MAX_DURATION_SEC:
-            return {'status': 'error', 'message': 'Видео слишком длинное (лимит 10 минут).'}
-            
-        info_downloaded = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info_downloaded)
+        info = ydl.extract_info(url, download=True)
+        filename = ydl.prepare_filename(info)
         mp3_filename = os.path.splitext(filename)[0] + ".mp3"
-        
         return {
-            'status': 'success',
             'filepath': mp3_filename,
-            'title': info.get('title', 'Аудиодорожка'),
+            'title': info.get('title', 'Аудиотрек'),
             'performer': info.get('uploader', 'Music Bot')
         }
+
 
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
