@@ -12,7 +12,7 @@ import static_ffmpeg
 static_ffmpeg.add_paths()
 
 # ==================== НАСТРОЙКИ ====================
-BOT_TOKEN = "8927203299:AAFTxi8T5EjSEe9gB3L-ivPTVv0TeEIcK0U"
+BOT_TOKEN = "8927203299:AAHfx_0kqlFPtZWHjpU0x5OH8lBC72vg-To"
 CHANNEL_ID = "@musique_mp3"
 CHANNEL_LINK = "https://t.me/musique_mp3"
 MAX_DURATION_SEC = 600
