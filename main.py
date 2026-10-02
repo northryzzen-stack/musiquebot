@@ -7,9 +7,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFil
 import yt_dlp
 
 # ==================== НАСТРОЙКИ ====================
-BOT_TOKEN = "ВСТАВЬТЕ_ТОКЕН_ОТ_BOTFATHER"
-CHANNEL_ID = "@username_вашего_канала"
-CHANNEL_LINK = "https://t.me/username_вашего_канала"
+BOT_TOKEN = "8927203299:AAFCWEE7k1safBfWdykt3xcMZe8SLaLw7oY"
+CHANNEL_ID = "@musique_mp3bot"
+CHANNEL_LINK = "t.me/musique_mp3"
 MAX_DURATION_SEC = 600  # Ограничение длительности (10 минут)
 # ===================================================
 
