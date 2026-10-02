@@ -5,7 +5,13 @@ from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
-import yt_dlp
+import yt_dlp 
+import static_ffmpeg
+
+static_ffmpeg.add_paths()
+
+
+
 
 # ==================== НАСТРОЙКИ ====================
 BOT_TOKEN = "8927203299:AAFedVj-MRXlD7W-v4ti71NUd3uM9dkpnpc"
