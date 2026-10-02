@@ -54,7 +54,7 @@ def get_subscribe_keyboard():
 
 def download_audio_sync(url: str, user_id: int) -> dict:
     output_template = f"downloads/{user_id}_%(id)s.%(ext)s"
-    ydl_opts = {
+        ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -65,13 +65,13 @@ def download_audio_sync(url: str, user_id: int) -> dict:
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        },
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'ios']
             }
+        }
+    }
+
         }
     }
     
