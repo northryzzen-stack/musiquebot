@@ -8,12 +8,12 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFil
 import yt_dlp
 
 # ==================== НАСТРОЙКИ ====================
-BOT_TOKEN = "ВАШ_ТОКЕН_ОТ_BOTFATHER"
-CHANNEL_ID = "@ВАШ_КАНАЛ"
-CHANNEL_LINK = "https://t.me/ВАШ_КАНАЛ"
+BOT_TOKEN = "8927203299:AAFedVj-MRXlD7W-v4ti71NUd3uM9dkpnpc"
+CHANNEL_ID = "@musique_mp3"
+CHANNEL_LINK = "https://t.me/musique_mp3"
 MAX_DURATION_SEC = 600
 # ===================================================
-
+ 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
