@@ -1,30 +1,41 @@
-import asyncio
-import logging
 import os
+import logging
+import subprocess
+import requests
+import music_tag
+import yt_dlp
+import static_ffmpeg
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
-import yt_dlp
-import static_ffmpeg
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
-# Подключаем автоматический FFmpeg
+# Инициализация FFmpeg
 static_ffmpeg.add_paths()
+logging.basicConfig(level=logging.INFO)
 
-# ==================== НАСТРОЙКИ ====================
-BOT_TOKEN = "8927203299:AAHfx_0kqlFPtZWHjpU0x5OH8lBC72vg-To"
-CHANNEL_ID = "@musique_mp3"
-CHANNEL_LINK = "https://t.me/musique_mp3"
+BOT_TOKEN = "8927203299:AAFTXi8T5EjSe9gB3L-ivPTVv0TeEICK0U"
 MAX_DURATION_SEC = 600
-# ===================================================
 
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
-# Веб-сервер для поддержки бесплатного тарифа Render ($0/мес)
+# --- Состояния FSM ---
+class AudioEdit(StatesGroup):
+    waiting_for_title = State()
+    waiting_for_artist = State()
+    waiting_for_album = State()
+    waiting_for_cover = State()
+    waiting_for_speed = State()
+    waiting_for_trim = State()
+
+# --- Веб-сервер для поддержки Render (Keep-Alive) ---
 async def handle_ping(request):
     return web.Response(text="Bot is alive!")
 
@@ -37,23 +48,88 @@ async def start_web_server():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
-# Проверка подписки на канал
-async def check_subscription(user_id: int) -> bool:
-    try:
-        member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
-        return member.status in ["member", "administrator", "creator"]
-    except Exception as e:
-        logging.error(f"Ошибка проверки подписки: {e}")
-        return False
-
-def get_subscribe_keyboard():
+# --- Вспомогательные функции обработки аудио ---
+def get_editor_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📢 Подписаться на канал", url=CHANNEL_LINK)],
-        [InlineKeyboardButton(text="✅ Я подписался", callback_data="check_sub")]
+        [
+            InlineKeyboardButton(text="🏷 Название", callback_data="edit_title"),
+            InlineKeyboardButton(text="👤 Артист", callback_data="edit_artist")
+        ],
+        [
+            InlineKeyboardButton(text="💿 Альбом", callback_data="edit_album"),
+            InlineKeyboardButton(text="🖼 Обложка", callback_data="edit_cover")
+        ],
+        [
+            InlineKeyboardButton(text="⚡ Скорость", callback_data="edit_speed"),
+            InlineKeyboardButton(text="✨ Slowed + Reverb", callback_data="effect_slowed")
+        ],
+        [
+            InlineKeyboardButton(text="✂️ Нарезать рингтон", callback_data="edit_trim")
+        ],
+        [
+            InlineKeyboardButton(text="📥 Скачать готовый MP3", callback_data="send_final")
+        ]
     ])
 
-def download_audio_sync(url: str, user_id: int) -> dict:
-    output_template = f"downloads/{user_id}_%(id)s.%(ext)s"
+def apply_slowed_reverb(input_path: str) -> str:
+    output_path = input_path.replace(".mp3", "_slowed.mp3")
+    cmd = [
+        'ffmpeg', '-y', '-i', input_path,
+        '-filter_complex', 'atempo=0.85,aecho=0.8:0.88:60:0.4',
+        output_path
+    ]
+    subprocess.run(cmd, check=True)
+    return output_path
+
+def change_speed(input_path: str, speed: float) -> str:
+    output_path = input_path.replace(".mp3", f"_{speed}.mp3")
+    cmd = [
+        'ffmpeg', '-y', '-i', input_path,
+        '-filter:a', f'atempo={speed}',
+        output_path
+    ]
+    subprocess.run(cmd, check=True)
+    return output_path
+
+def trim_audio(input_path: str, start_sec: int, duration_sec: int = 30) -> str:
+    output_path = input_path.replace(".mp3", "_ringtone.mp3")
+    cmd = [
+        'ffmpeg', '-y', '-ss', str(start_sec), '-i', input_path,
+        '-t', str(duration_sec), '-c', 'copy', output_path
+    ]
+    subprocess.run(cmd, check=True)
+    return output_path
+
+# --- Хэндлеры бота ---
+@dp.message(CommandStart())
+async def start_cmd(message: types.Message):
+    await message.answer(
+        "👋 **Привет! Я универсальный Аудио-Бота Редактор.**\n\n"
+        "Пришли мне:\n"
+        "1. **Любой MP3 или Голосовое сообщение** — для обработки и изменения метаданных.\n"
+        "2. **Ссылку на TikTok / Pinterest / VK** — чтобы выгрузить чистый аудиозапись!"
+    )
+
+# Приём файлов и голосовых
+@dp.message(F.audio | F.voice | F.document)
+async def handle_audio_file(message: types.Message, state: FSMContext):
+    msg = await message.answer("⏳ Загружаю и подготавливаю файл...")
+    file_id = message.audio.file_id if message.audio else (message.voice.file_id if message.voice else message.document.file_id)
+    file_info = await bot.get_file(file_id)
+    
+    user_file_path = f"downloads/{message.from_user.id}_current.mp3"
+    await bot.download_file(file_info.file_path, user_file_path)
+    
+    await state.update_data(file_path=user_file_path)
+    await msg.delete()
+    await message.answer("🎵 **Файл загружен!** Выберите действие в меню ниже:", reply_markup=get_editor_keyboard())
+
+# Приём ссылок (TikTok, Pinterest, SoundCloud)
+@dp.message(F.text.startswith("http"))
+async def handle_links(message: types.Message, state: FSMContext):
+    msg = await message.answer("⏳ Извлекаю аудио из ссылки...")
+    user_file_path = f"downloads/{message.from_user.id}_current.mp3"
+    
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -61,105 +137,140 @@ def download_audio_sync(url: str, user_id: int) -> dict:
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': output_template,
-        'quiet': True,
-        'no_warnings': True,
-        'nocheckcertificate': True,
-        'geo_bypass': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['mweb', 'tv_embedded', 'ios', 'android'],
-            }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-        }
+        'outtmpl': user_file_path.replace('.mp3', ''),
+        'quiet': True
     }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        mp3_filename = os.path.splitext(filename)[0] + ".mp3"
-        return {
-            'filepath': mp3_filename,
-            'title': info.get('title', 'Аудиотрек'),
-            'performer': info.get('uploader', 'Music Bot')
-        }
-
-
-
-        
-    
-
-        
-    
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        mp3_filename = os.path.splitext(filename)[0] + ".mp3"
-        return {
-            'filepath': mp3_filename,
-            'title': info.get('title', 'Аудиотрек'),
-            'performer': info.get('uploader', 'Music Bot')
-        }
-
-@dp.message(CommandStart())
-async def cmd_start(message: types.Message):
-    await message.answer(
-        "👋 **Привет! Я бот для скачивания MP3 из TikTok, Reels, Shorts и YouTube.**\n\n"
-        "Отправь мне ссылку на видео!",
-        parse_mode="Markdown"
-    )
-
-@dp.message(F.text.startswith("http://") | F.text.startswith("https://"))
-async def handle_link(message: types.Message):
-    user_id = message.from_user.id
-
-    if not await check_subscription(user_id):
-        await message.answer(
-            "🔒 **Чтобы скачивать аудио, подпишитесь на наш канал!**",
-            reply_markup=get_subscribe_keyboard(),
-            parse_mode="Markdown"
-        )
-        return
-
-    status_msg = await message.answer("⏳ **Скачиваю и обрабатываю трек...**", parse_mode="Markdown")
     
     try:
-        res = await asyncio.to_thread(download_audio_sync, message.text.strip(), user_id)
-        filepath = res['filepath']
-        
-        if os.path.exists(filepath):
-            await status_msg.edit_text("📤 **Отправляю MP3...**", parse_mode="Markdown")
-            await message.answer_audio(
-                audio=FSInputFile(filepath),
-                title=res['title'],
-                performer=res['performer']
-            )
-            await status_msg.delete()
-            os.remove(filepath)
-        else:
-            await status_msg.edit_text("❌ Не удалось обработать файл.")
-            
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([message.text])
+        await state.update_data(file_path=user_file_path)
+        await msg.delete()
+        await message.answer("✅ **Аудио извлечено!** Что с ним сделать?", reply_markup=get_editor_keyboard())
     except Exception as e:
-        logging.error(f"Download error: {e}")
-        await status_msg.edit_text("❌ Ошибка при обработке ссылки.")
+        await msg.edit_text("❌ Ошибка при скачивании по ссылке. Убедитесь, что ссылка ведет на TikTok, Pinterest или SoundCloud.")
 
-@dp.callback_query(F.data == "check_sub")
-async def callback_check_sub(callback: types.CallbackQuery):
-    if await check_subscription(callback.from_user.id):
-        await callback.message.edit_text("✅ **Подписка подтверждена! Отправляйте ссылку.**", parse_mode="Markdown")
-        await callback.answer()
-    else:
-        await callback.answer("❌ Вы всё ещё не подписались на канал!", show_alert=True)
+# --- Обработка нажатий на меню ---
+@dp.callback_query()
+async def process_callbacks(callback: CallbackQuery, state: FSMContext):
+    data = callback.data
+    user_data = await state.get_data()
+    file_path = user_data.get("file_path")
 
+    if not file_path or not os.path.exists(file_path):
+        await callback.answer("❌ Загрузите файл заново.", show_alert=True)
+        return
+
+    if data == "edit_title":
+        await state.set_state(AudioEdit.waiting_for_title)
+        await callback.message.answer("Введите новое **название** трека:")
+    elif data == "edit_artist":
+        await state.set_state(AudioEdit.waiting_for_artist)
+        await callback.message.answer("Введите имя **исполнителя (артиста)**:")
+    elif data == "edit_album":
+        await state.set_state(AudioEdit.waiting_for_album)
+        await callback.message.answer("Введите название **альбома**:")
+    elif data == "edit_cover":
+        await state.set_state(AudioEdit.waiting_for_cover)
+        await callback.message.answer("Пришлите **картинку/фотографию** для обложки:")
+    elif data == "edit_speed":
+        await state.set_state(AudioEdit.waiting_for_speed)
+        await callback.message.answer("Введите коэффициент скорости (например: `1.2` для ускорения или `0.8` для замедления):")
+    elif data == "edit_trim":
+        await state.set_state(AudioEdit.waiting_for_trim)
+        await callback.message.answer("Введите **секунду начала** нарезки (например `30` чтобы нарезать с 30-й секунды):")
+    elif data == "effect_slowed":
+        await callback.message.answer("⏳ Применяю эффект Slowed + Reverb...")
+        new_path = apply_slowed_reverb(file_path)
+        await state.update_data(file_path=new_path)
+        await callback.message.answer("✨ Эффект применен!", reply_markup=get_editor_keyboard())
+    elif data == "send_final":
+        f = music_tag.load_file(file_path)
+        title = str(f['title']) or "Аудиотрек"
+        artist = str(f['artist']) or "Редактор"
+        
+        await callback.message.answer_audio(
+            FSInputFile(file_path),
+            title=title,
+            performer=artist,
+            caption="✅ Ваш обработанный трек готов!"
+        )
+    await callback.answer()
+
+# --- Приём введенных значений ---
+@dp.message(AudioEdit.waiting_for_title)
+async def set_title(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    f = music_tag.load_file(user_data['file_path'])
+    f['title'] = message.text
+    f.save()
+    await state.set_state(None)
+    await message.answer(f"✅ Название изменено на: **{message.text}**", reply_markup=get_editor_keyboard())
+
+@dp.message(AudioEdit.waiting_for_artist)
+async def set_artist(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    f = music_tag.load_file(user_data['file_path'])
+    f['artist'] = message.text
+    f.save()
+    await state.set_state(None)
+    await message.answer(f"✅ Артист изменен на: **{message.text}**", reply_markup=get_editor_keyboard())
+
+@dp.message(AudioEdit.waiting_for_album)
+async def set_album(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    f = music_tag.load_file(user_data['file_path'])
+    f['album'] = message.text
+    f.save()
+    await state.set_state(None)
+    await message.answer(f"✅ Альбом изменен на: **{message.text}**", reply_markup=get_editor_keyboard())
+
+@dp.message(AudioEdit.waiting_for_cover, F.photo)
+async def set_cover(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    photo_path = f"downloads/{message.from_user.id}_cover.jpg"
+    await bot.download(message.photo[-1], destination=photo_path)
+    
+    f = music_tag.load_file(user_data['file_path'])
+    with open(photo_path, 'rb') as img:
+        f['artwork'] = img.read()
+    f.save()
+    
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+        
+    await state.set_state(None)
+    await message.answer("✅ **Обложка вшита в MP3!**", reply_markup=get_editor_keyboard())
+
+@dp.message(AudioEdit.waiting_for_speed)
+async def set_speed(message: types.Message, state: FSMContext):
+    try:
+        speed = float(message.text.replace(',', '.'))
+        user_data = await state.get_data()
+        new_path = change_speed(user_data['file_path'], speed)
+        await state.update_data(file_path=new_path)
+        await state.set_state(None)
+        await message.answer(f"⚡ Скорость изменена x{speed}!", reply_markup=get_editor_keyboard())
+    except:
+        await message.answer("❌ Введите число, например `1.2` или `0.8`")
+
+@dp.message(AudioEdit.waiting_for_trim)
+async def set_trim(message: types.Message, state: FSMContext):
+    try:
+        start_sec = int(message.text)
+        user_data = await state.get_data()
+        new_path = trim_audio(user_data['file_path'], start_sec=start_sec, duration_sec=30)
+        await state.update_data(file_path=new_path)
+        await state.set_state(None)
+        await message.answer("✂️ 30-секундный рингтон успешно нарезан!", reply_markup=get_editor_keyboard())
+    except:
+        await message.answer("❌ Введите целое число секунд (например `30`)")
+
+# --- Запуск ---
 async def main():
-    logging.basicConfig(level=logging.INFO)
     await start_web_server()
-    print("Бот запущен!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
-
