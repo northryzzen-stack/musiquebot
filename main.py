@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8300695982:AAG7t80QBHMZGA041C3IRI2qcuX7CcK4YD8")
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
-# Включаем автоматический Markdown для всех сообщений
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
 dp = Dispatcher(storage=MemoryStorage())
 
@@ -60,14 +59,14 @@ def get_editor_keyboard():
             InlineKeyboardButton(text="⚡ Nightcore", callback_data="effect_nightcore")
         ],
         [
-            InlineKeyboardButton(text="🚀 Изменить скорость", callback_data="edit_speed")
+            InlineKeyboardButton(text="🚀 Изменить скорость", callback_data="edit_speed"),
+            InlineKeyboardButton(text="📀 Видео с пластинкой", callback_data="effect_vinyl")
         ],
         [
             InlineKeyboardButton(text="📥 Скачать готовый MP3", callback_data="send_final")
         ]
     ])
 
-# Вспомогательные функции FFmpeg для эффектов
 def run_ffmpeg(cmd):
     subprocess.run(cmd, check=True)
 
@@ -130,17 +129,61 @@ def trim_audio(input_path: str, start_sec: int, duration_sec: int = 30) -> str:
     run_ffmpeg(cmd)
     return output_path
 
+def make_vinyl_video(audio_path: str) -> str:
+    output_video = audio_path.replace(".mp3", "_vinyl.mp4")
+    f = music_tag.load_file(audio_path)
+    artwork = f['artwork']
+    
+    cover_path = audio_path.replace(".mp3", "_temp_cover.jpg")
+    has_cover = False
+    
+    if artwork and artwork.value:
+        with open(cover_path, "wb") as img_file:
+            img_file.write(artwork.value.data)
+        has_cover = True
+    
+    if not has_cover:
+        cmd_img = [
+            FFMPEG_PATH, '-y', '-f', 'lavfi', '-i', 'color=c=0x1a1a1a:s=600x600',
+            '-vframes', '1', cover_path
+        ]
+        run_ffmpeg(cmd_img)
+
+    cmd = [
+        FFMPEG_PATH, '-y',
+        '-loop', '1', '-i', cover_path,
+        '-i', audio_path,
+        '-filter_complex',
+        "[0:v]scale=600:600,format=qtrgb,rotate=2*PI*t/4:c=black@0:ow=rotw(iw):oh=roth(ih),format=yuv420p[v]",
+        '-map', '[v]', '-map', '1:a',
+        '-c:v', 'libx264', '-shortest', '-pix_fmt', 'yuv420p',
+        output_video
+    ]
+    run_ffmpeg(cmd)
+
+    if os.path.exists(cover_path):
+        os.remove(cover_path)
+
+    return output_video
+
 @dp.message(CommandStart())
 async def start_cmd(message: types.Message):
     await message.answer(
-        "🎧 *Добро пожаловать в Kenny Studio!*\n\n"
-        "Я помогу скачать аудиозапись и довести её до идеала:\n\n"
-        "🔹 *Отправьте любую ссылку* (TikTok, Pinterest, VK, YouTube)\n"
-        "🔹 *Или загрузите любой MP3 / Голосовое сообщение*\n\n"
-        "✨ *Что я умею:*\n"
-        "• Вшивать обложку и менять теги (Артист, Название, Альбом)\n"
-        "• Применять звуковые эффекты: `Slowed + Reverb`, `Bass Boost`, `8D Audio`, `Nightcore`\n"
-        "• Нарезать 30-секундные рингтоны и менять скорость!"
+        "🎧 *Добро пожаловать в KennyLoad Studio*\n\n"
+        "Скачивайте аудио и редактируйте его прямо в боте.\n\n"
+        "📥 *Отправьте ссылку*\n"
+        "TikTok • Pinterest • VK • YouTube\n\n"
+        "Или загрузите MP3 / голосовое сообщение.\n\n"
+        "✨ *Возможности*\n\n"
+        "• Обложка и теги - артист, название, альбом\n"
+        "• Slowed + Reverb\n"
+        "• Bass Boost\n"
+        "• 8D Audio\n"
+        "• Nightcore\n"
+        "• Изменение скорости\n"
+        "• Нарезка 30-секундных рингтонов\n"
+        "• 📀 Видео с вращающейся пластинкой\n\n"
+        "Отправьте ссылку или аудиофайл, чтобы начать 🎵"
     )
 
 @dp.message(F.audio | F.voice | F.document)
@@ -219,7 +262,6 @@ async def process_callbacks(callback: CallbackQuery, state: FSMContext):
         await state.set_state(AudioEdit.waiting_for_trim)
         await callback.message.answer("✂️ Введите *секунду начала* нарезки (например `30`):")
     
-    # Звуковые эффекты
     elif data in ["effect_slowed", "effect_bass", "effect_8d", "effect_nightcore"]:
         msg = await callback.message.answer("🎛 *Применяю звуковой эффект...*")
         loop = asyncio.get_event_loop()
@@ -239,10 +281,36 @@ async def process_callbacks(callback: CallbackQuery, state: FSMContext):
             
         await state.update_data(file_path=new_path)
         await msg.delete()
-        await callback.message.answer(f"✨ *Эффект {eff_name} успешно применён!*", reply_markup=get_editor_keyboard())
+        
+        f = music_tag.load_file(new_path)
+        title = str(f['title']) or "Аудиотрек"
+        artist = str(f['artist']) or "Kenny Studio"
+
+        await callback.message.answer_audio(
+            FSInputFile(new_path),
+            title=title,
+            performer=artist,
+            caption=f"✨ *Эффект {eff_name} успешно применён!*",
+            reply_markup=get_editor_keyboard()
+        )
+
+    elif data == "effect_vinyl":
+        msg = await callback.message.answer("🎬 *Генерирую видео с вращающейся пластинкой...* Это займет немного времени.")
+        loop = asyncio.get_event_loop()
+        try:
+            video_path = await loop.run_in_executor(None, make_vinyl_video, file_path)
+            await msg.delete()
+            await callback.message.answer_video(
+                FSInputFile(video_path),
+                caption="📀 *Ваше видео с пластинкой готово!*",
+                reply_markup=get_editor_keyboard()
+            )
+        except Exception as e:
+            logging.error(f"Vinyl error: {e}")
+            await msg.edit_text("❌ Не удалось создать видео с пластинкой.")
 
     elif data == "send_final":
-        msg = await callback.message.answer("📦 *Формирую и отправляю итоговый MP3...*")
+        msg = await callback.message.answer("📦 *Формирую итоговый файл...*")
         f = music_tag.load_file(file_path)
         title = str(f['title']) or "Аудиотрек"
         artist = str(f['artist']) or "Kenny Studio"
@@ -251,7 +319,7 @@ async def process_callbacks(callback: CallbackQuery, state: FSMContext):
             FSInputFile(file_path),
             title=title,
             performer=artist,
-            caption="🎉 *Ваш обработанный трек готов!*\n\nСоздано в @kennyloadbot"
+            caption="🎉 *Ваш готовый трек!*"
         )
         await msg.delete()
 
@@ -333,7 +401,18 @@ async def set_speed(message: types.Message, state: FSMContext):
         await state.update_data(file_path=new_path)
         await state.set_state(None)
         await msg.delete()
-        await message.answer(f"🚀 Скорость изменена x{speed}!", reply_markup=get_editor_keyboard())
+
+        f = music_tag.load_file(new_path)
+        title = str(f['title']) or "Аудиотрек"
+        artist = str(f['artist']) or "Kenny Studio"
+
+        await message.answer_audio(
+            FSInputFile(new_path),
+            title=title,
+            performer=artist,
+            caption=f"🚀 *Скорость `x{speed}` успешно применена!*",
+            reply_markup=get_editor_keyboard()
+        )
     except:
         await message.answer("❌ Введите число, например `1.2` или `0.85`")
 
@@ -348,7 +427,18 @@ async def set_trim(message: types.Message, state: FSMContext):
         await state.update_data(file_path=new_path)
         await state.set_state(None)
         await msg.delete()
-        await message.answer("✂️ *30-секундный рингтон готов!*", reply_markup=get_editor_keyboard())
+
+        f = music_tag.load_file(new_path)
+        title = str(f['title']) or "Аудиотрек"
+        artist = str(f['artist']) or "Kenny Studio"
+
+        await message.answer_audio(
+            FSInputFile(new_path),
+            title=title,
+            performer=artist,
+            caption="✂️ *Рингтон (30 секунд) успешно создан!*",
+            reply_markup=get_editor_keyboard()
+        )
     except:
         await message.answer("❌ Введите целое число секунд (например `30`)")
 
@@ -369,3 +459,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
