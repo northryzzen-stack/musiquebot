@@ -123,7 +123,7 @@ def track_display_name(file_path: str) -> str:
     title = info["title"]
 
     if artist != "Unknown" and title != "Unknown":
-        return f"{artist} — {title}"
+        return f"{artist} â {title}"
 
     if title != "Unknown":
         return title
@@ -220,41 +220,41 @@ async def edit_main_menu(message, user_id: int):
 def get_no_track_text(lang: str):
     if lang == "en":
         return (
-            "🎧 *KENNY STUDIO*\n\n"
+            "ð§ *KENNY STUDIO*\n\n"
             "Send an MP3/audio file to start working."
         )
 
     if lang == "kz":
         return (
-            "🎧 *KENNY STUDIO*\n\n"
-            "Жұмысты бастау үшін аудио файл жіберіңіз."
+            "ð§ *KENNY STUDIO*\n\n"
+            "ÐÒ±Ð¼ÑÑÑÑ Ð±Ð°ÑÑÐ°Ñ Ò¯ÑÑÐ½ Ð°ÑÐ´Ð¸Ð¾ ÑÐ°Ð¹Ð» Ð¶ÑÐ±ÐµÑÑÒ£ÑÐ·."
         )
 
     return (
-        "🎧 *KENNY STUDIO*\n\n"
-        "Начнём с трека.\n"
-        "Отправьте MP3 или аудиофайл."
+        "ð§ *KENNY STUDIO*\n\n"
+        "ÐÐ°ÑÐ½ÑÐ¼ Ñ ÑÑÐµÐºÐ°.\n"
+        "ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ MP3 Ð¸Ð»Ð¸ Ð°ÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð»."
     )
 
 
 def get_saved_text(lang: str):
     if lang == "en":
-        return "✅ Changes applied."
+        return "â Changes applied."
 
     if lang == "kz":
-        return "✅ Өзгерістер қолданылды."
+        return "â Ó¨Ð·Ð³ÐµÑÑÑÑÐµÑ ÒÐ¾Ð»Ð´Ð°Ð½ÑÐ»Ð´Ñ."
 
-    return "✅ Изменения применены."
+    return "â ÐÐ·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð¿ÑÐ¸Ð¼ÐµÐ½ÐµÐ½Ñ."
 
 
 def get_cancelled_text(lang: str):
     if lang == "en":
-        return "❌ Changes cancelled."
+        return "â Changes cancelled."
 
     if lang == "kz":
-        return "❌ Өзгерістерден бас тартылды."
+        return "â Ó¨Ð·Ð³ÐµÑÑÑÑÐµÑÐ´ÐµÐ½ Ð±Ð°Ñ ÑÐ°ÑÑÑÐ»Ð´Ñ."
 
-    return "❌ Изменения отменены."
+    return "â ÐÐ·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð¾ÑÐ¼ÐµÐ½ÐµÐ½Ñ."
 
 
 # =========================================================
@@ -266,17 +266,17 @@ def get_lang_keyboard():
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🇷🇺 Русский",
+                    text="ð·ðº Ð ÑÑÑÐºÐ¸Ð¹",
                     callback_data="set_lang_ru",
                 ),
                 InlineKeyboardButton(
-                    text="🇬🇧 English",
+                    text="ð¬ð§ English",
                     callback_data="set_lang_en",
                 ),
             ],
             [
                 InlineKeyboardButton(
-                    text="🇰🇿 Қазақша",
+                    text="ð°ð¿ ÒÐ°Ð·Ð°ÒÑÐ°",
                     callback_data="set_lang_kz",
                 )
             ],
@@ -307,54 +307,24 @@ def get_main_keyboard(lang: str):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(
-                    text="🏷 Теги",
-                    callback_data="menu_tags",
-                ),
-                InlineKeyboardButton(
-                    text="🎛 Эффекты",
-                    callback_data="menu_effects",
-                ),
+                InlineKeyboardButton(text="ð· Ð¢ÐµÐ³Ð¸", callback_data="menu_tags"),
+                InlineKeyboardButton(text="ð Ð­ÑÑÐµÐºÑÑ", callback_data="menu_effects"),
             ],
             [
-                InlineKeyboardButton(
-                    text="✂️ Нарезка",
-                    callback_data="menu_trim",
-                ),
-                InlineKeyboardButton(
-                    text="🎚 Скорость / Тон",
-                    callback_data="menu_speed",
-                ),
+                InlineKeyboardButton(text="âï¸ ÐÐ°ÑÐµÐ·ÐºÐ°", callback_data="menu_trim"),
+                InlineKeyboardButton(text="ð Ð¡ÐºÐ¾ÑÐ¾ÑÑÑ / Ð¢Ð¾Ð½", callback_data="menu_speed"),
             ],
             [
-                InlineKeyboardButton(
-                    text="🎤 Разделить",
-                    callback_data="menu_stems",
-                ),
-                InlineKeyboardButton(
-                    text="🎬 Видео",
-                    callback_data="menu_video",
-                ),
+                InlineKeyboardButton(text="ð¤ Ð Ð°Ð·Ð´ÐµÐ»Ð¸ÑÑ", callback_data="menu_stems"),
+                InlineKeyboardButton(text="ð¬ ÐÐ¸Ð´ÐµÐ¾", callback_data="menu_video"),
             ],
             [
-                InlineKeyboardButton(
-                    text="🧬 Kenny ID",
-                    callback_data="menu_kenny_id",
-                ),
-                InlineKeyboardButton(
-                    text="🧹 Улучшить",
-                    callback_data="menu_improve",
-                ),
+                InlineKeyboardButton(text="ð§¬ Kenny ID", callback_data="menu_kenny_id"),
+                InlineKeyboardButton(text="ð§¹ Ð£Ð»ÑÑÑÐ¸ÑÑ", callback_data="menu_improve"),
             ],
             [
-                InlineKeyboardButton(
-                    text="📥 Получить файл",
-                    callback_data="menu_export",
-                ),
-                InlineKeyboardButton(
-                    text="⚙️ Настройки",
-                    callback_data="menu_settings",
-                ),
+                InlineKeyboardButton(text="ð¥ ÐÐ¾Ð»ÑÑÐ¸ÑÑ ÑÐ°Ð¹Ð»", callback_data="menu_export"),
+                InlineKeyboardButton(text="âï¸ ÐÐ°ÑÑÑÐ¾Ð¹ÐºÐ¸", callback_data="menu_settings"),
             ],
         ]
     )
@@ -364,55 +334,25 @@ def get_tags_keyboard(lang: str):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_edit_artist"),
-                    callback_data="edit_tag_artist",
-                ),
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_edit_title"),
-                    callback_data="edit_tag_title",
-                ),
+                InlineKeyboardButton(text=get_txt(lang, "btn_edit_artist"), callback_data="edit_tag_artist"),
+                InlineKeyboardButton(text=get_txt(lang, "btn_edit_title"), callback_data="edit_tag_title"),
             ],
             [
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_edit_album"),
-                    callback_data="edit_tag_album",
-                ),
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_edit_cover"),
-                    callback_data="edit_tag_cover",
-                ),
+                InlineKeyboardButton(text=get_txt(lang, "btn_edit_album"), callback_data="edit_tag_album"),
+                InlineKeyboardButton(text=get_txt(lang, "btn_edit_cover"), callback_data="edit_tag_cover"),
             ],
-            [
-                InlineKeyboardButton(
-                    text="↩️ Undo",
-                    callback_data="undo_edit",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_main_menu"),
-                    callback_data="main_menu",
-                )
-            ],
+            [InlineKeyboardButton(text="â©ï¸ Undo", callback_data="undo_edit")],
+            [InlineKeyboardButton(text=get_txt(lang, "btn_main_menu"), callback_data="main_menu")],
         ]
     )
 
 
 def get_preview_keyboard(lang: str):
     return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_apply"),
-                    callback_data="preview_apply",
-                ),
-                InlineKeyboardButton(
-                    text=get_txt(lang, "btn_cancel"),
-                    callback_data="preview_cancel",
-                ),
-            ]
-        ]
+        inline_keyboard=[[
+            InlineKeyboardButton(text=get_txt(lang, "btn_apply"), callback_data="preview_apply"),
+            InlineKeyboardButton(text=get_txt(lang, "btn_cancel"), callback_data="preview_cancel"),
+        ]]
     )
 
 
@@ -421,118 +361,52 @@ def get_preview_keyboard(lang: str):
 # =========================================================
 
 @dp.message(CommandStart())
-async def cmd_start(
-    message: types.Message,
-    state: FSMContext,
-):
+async def cmd_start(message: types.Message, state: FSMContext):
     await state.clear()
-
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
+    session = session_mgr.get_session(message.from_user.id)
 
     if not session.lang_selected:
-        await message.answer(
-            get_txt("ru", "start_welcome"),
-            reply_markup=get_lang_keyboard(),
-        )
+        await message.answer(get_txt("ru", "start_welcome"), reply_markup=get_lang_keyboard())
         return
 
-    if not await require_subscription(
-        message.from_user.id,
-        message,
-    ):
+    if not await require_subscription(message.from_user.id, message):
         return
 
     if session.has_track():
-        await send_main_menu(
-            message,
-            message.from_user.id,
-        )
+        await send_main_menu(message, message.from_user.id)
     else:
-        await message.answer(
-            get_no_track_text(
-                safe_lang(session)
-            )
-        )
+        await message.answer(get_no_track_text(safe_lang(session)))
 
 
-@dp.callback_query(
-    F.data.startswith("set_lang_")
-)
-async def process_lang_select(
-    callback: CallbackQuery,
-):
+@dp.callback_query(F.data.startswith("set_lang_"))
+async def process_lang_select(callback: CallbackQuery):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
-    lang = callback.data.replace(
-        "set_lang_",
-        ""
-    )
-
+    session = session_mgr.get_session(callback.from_user.id)
+    lang = callback.data.replace("set_lang_", "")
     if lang not in ("ru", "en", "kz"):
         lang = "ru"
-
     session.lang = lang
     session.lang_selected = True
 
-    if not await check_channel_subscription(
-        callback.from_user.id
-    ):
-        await callback.message.edit_text(
-            get_txt(lang, "sub_required"),
-            reply_markup=get_sub_keyboard(lang),
-        )
+    if not await check_channel_subscription(callback.from_user.id):
+        await callback.message.edit_text(get_txt(lang, "sub_required"), reply_markup=get_sub_keyboard(lang))
         return
-
-    await callback.message.edit_text(
-        get_no_track_text(lang)
-    )
+    await callback.message.edit_text(get_no_track_text(lang))
 
 
-@dp.callback_query(
-    F.data == "check_subscription"
-)
-async def process_check_subscription(
-    callback: CallbackQuery,
-):
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
+@dp.callback_query(F.data == "check_subscription")
+async def process_check_subscription(callback: CallbackQuery):
+    session = session_mgr.get_session(callback.from_user.id)
     lang = safe_lang(session)
-
-    subscribed = (
-        await check_channel_subscription(
-            callback.from_user.id
-        )
-    )
-
+    subscribed = await check_channel_subscription(callback.from_user.id)
     if not subscribed:
-        await callback.answer(
-            get_txt(lang, "sub_fail"),
-            show_alert=True,
-        )
+        await callback.answer(get_txt(lang, "sub_fail"), show_alert=True)
         return
-
-    await callback.answer(
-        get_txt(lang, "sub_success"),
-        show_alert=True,
-    )
-
+    await callback.answer(get_txt(lang, "sub_success"), show_alert=True)
     if session.has_track():
-        await edit_main_menu(
-            callback.message,
-            callback.from_user.id,
-        )
+        await edit_main_menu(callback.message, callback.from_user.id)
     else:
-        await callback.message.edit_text(
-            get_no_track_text(lang)
-        )
+        await callback.message.edit_text(get_no_track_text(lang))
 
 
 # =========================================================
@@ -540,128 +414,58 @@ async def process_check_subscription(
 # =========================================================
 
 @dp.message(F.audio | F.voice | F.document)
-async def handle_audio_file(
-    message: types.Message,
-    state: FSMContext,
-):
+async def handle_audio_file(message: types.Message, state: FSMContext):
     await state.clear()
+    session = session_mgr.get_session(message.from_user.id)
 
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
-
-    if not await require_subscription(
-        message.from_user.id,
-        message,
-    ):
+    if not await require_subscription(message.from_user.id, message):
         return
 
-    target = (
-        message.audio
-        or message.voice
-        or message.document
-    )
+    target = message.audio or message.voice or message.document
 
-    # Не принимаем случайные документы
     if message.document:
         mime = message.document.mime_type or ""
-
-        filename = (
-            message.document.file_name or ""
-        ).lower()
-
-        valid_extension = filename.endswith(
-            (
-                ".mp3",
-                ".m4a",
-                ".wav",
-                ".ogg",
-                ".flac",
-                ".aac",
-            )
-        )
-
-        if not (
-            mime.startswith("audio/")
-            or valid_extension
-        ):
-            await message.answer(
-                "❌ Отправьте аудиофайл."
-            )
+        filename = (message.document.file_name or "").lower()
+        valid_extension = filename.endswith((".mp3", ".m4a", ".wav", ".ogg", ".flac", ".aac"))
+        if not (mime.startswith("audio/") or valid_extension):
+            await message.answer("â ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ Ð°ÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð».")
             return
 
-    loading = await message.answer(
-        "⏳ Загружаю аудио..."
-    )
+    loading = await message.answer("â³ ÐÐ°Ð³ÑÑÐ¶Ð°Ñ Ð°ÑÐ´Ð¸Ð¾...")
 
     try:
         if message.audio:
-            original_name = (
-                message.audio.file_name
-                or "track.mp3"
-            )
-
+            original_name = message.audio.file_name or "track.mp3"
         elif message.document:
-            original_name = (
-                message.document.file_name
-                or "track.mp3"
-            )
-
+            original_name = message.document.file_name or "track.mp3"
         else:
             original_name = "voice.ogg"
 
-        extension = (
-            Path(original_name).suffix.lower()
-            or ".mp3"
-        )
+        extension = Path(original_name).suffix.lower() or ".mp3"
+        file_path = DOWNLOAD_DIR / f"{message.from_user.id}_original{extension}"
 
-        file_path = (
-            DOWNLOAD_DIR
-            / f"{message.from_user.id}_original{extension}"
-        )
-
-        # Удаляем старый original пользователя
-        for old_file in DOWNLOAD_DIR.glob(
-            f"{message.from_user.id}_original.*"
-        ):
+        for old_file in DOWNLOAD_DIR.glob(f"{message.from_user.id}_original.*"):
             try:
                 old_file.unlink()
             except OSError:
                 pass
 
-        await bot.download(
-            target,
-            destination=str(file_path),
-        )
-
-        session.set_new_track(
-            str(file_path)
-        )
+        await bot.download(target, destination=str(file_path))
+        session.set_new_track(str(file_path))
 
         try:
             await loading.delete()
         except Exception:
             pass
 
-        await send_main_menu(
-            message,
-            message.from_user.id,
-        )
+        await send_main_menu(message, message.from_user.id)
 
     except Exception:
-        logger.exception(
-            "Audio upload failed for user %s",
-            message.from_user.id,
-        )
-
+        logger.exception("Audio upload failed for user %s", message.from_user.id)
         try:
-            await loading.edit_text(
-                "❌ Не удалось обработать файл."
-            )
+            await loading.edit_text("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¾Ð±ÑÐ°Ð±Ð¾ÑÐ°ÑÑ ÑÐ°Ð¹Ð».")
         except Exception:
-            await message.answer(
-                "❌ Не удалось обработать файл."
-            )
+            await message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¾Ð±ÑÐ°Ð±Ð¾ÑÐ°ÑÑ ÑÐ°Ð¹Ð».")
 
 
 # =========================================================
@@ -669,426 +473,171 @@ async def handle_audio_file(
 # =========================================================
 
 @dp.callback_query(F.data == "menu_tags")
-async def process_menu_tags(
-    callback: CallbackQuery,
-):
+async def process_menu_tags(callback: CallbackQuery):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
+    session = session_mgr.get_session(callback.from_user.id)
     lang = safe_lang(session)
-
     if not session.has_track():
-        await callback.message.answer(
-            get_no_track_text(lang)
-        )
+        await callback.message.answer(get_no_track_text(lang))
         return
-
-    info = get_audio_info(
-        session.current_file
-    )
-
+    info = get_audio_info(session.current_file)
     await callback.message.edit_text(
-        get_txt(
-            lang,
-            "tags_menu_title",
-            artist=info["artist"],
-            title=info["title"],
-            album=info["album"],
-            year=info["year"],
-        ),
+        get_txt(lang, "tags_menu_title", artist=info["artist"], title=info["title"], album=info["album"], year=info["year"]),
         reply_markup=get_tags_keyboard(lang),
     )
 
 
 # =========================================================
-# ARTIST
+# ARTIST / TITLE / ALBUM / COVER
 # =========================================================
 
-@dp.callback_query(
-    F.data == "edit_tag_artist"
-)
-async def ask_artist(
-    callback: CallbackQuery,
-    state: FSMContext,
-):
+@dp.callback_query(F.data == "edit_tag_artist")
+async def ask_artist(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
-    await state.set_state(
-        StudioStates.waiting_for_artist
-    )
-
-    await callback.message.answer(
-        get_txt(
-            safe_lang(session),
-            "ask_artist",
-        )
-    )
+    session = session_mgr.get_session(callback.from_user.id)
+    await state.set_state(StudioStates.waiting_for_artist)
+    await callback.message.answer(get_txt(safe_lang(session), "ask_artist"))
 
 
-@dp.message(
-    StudioStates.waiting_for_artist
-)
-async def process_new_artist(
-    message: types.Message,
-    state: FSMContext,
-):
+@dp.message(StudioStates.waiting_for_artist)
+async def process_new_artist(message: types.Message, state: FSMContext):
     if not message.text:
-        await message.answer(
-            "❌ Отправьте имя текстом."
-        )
+        await message.answer("â ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ Ð¸Ð¼Ñ ÑÐµÐºÑÑÐ¾Ð¼.")
         return
-
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
-
-    preview = (
-        session.copy_current_to_preview(
-            ".mp3"
-        )
-    )
-
+    session = session_mgr.get_session(message.from_user.id)
+    preview = session.copy_current_to_preview(".mp3")
     if not preview:
         await state.clear()
-        await message.answer(
-            "❌ Аудиофайл не найден."
-        )
+        await message.answer("â ÐÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½.")
         return
-
     try:
         audio = music_tag.load_file(preview)
         audio["artist"] = message.text.strip()
         audio.save()
-
         await state.clear()
-
         info = get_audio_info(preview)
-
         await message.answer_audio(
-            audio=FSInputFile(preview),
-            title=info["title"],
-            performer=info["artist"],
-            caption=get_txt(
-                safe_lang(session),
-                "preview_audio_title",
-            ),
-            reply_markup=get_preview_keyboard(
-                safe_lang(session)
-            ),
+            audio=FSInputFile(preview), title=info["title"], performer=info["artist"],
+            caption=get_txt(safe_lang(session), "preview_audio_title"),
+            reply_markup=get_preview_keyboard(safe_lang(session)),
         )
-
     except Exception:
-        logger.exception(
-            "Artist editing failed"
-        )
-
+        logger.exception("Artist editing failed")
         session.cancel_preview()
         await state.clear()
-
-        await message.answer(
-            "❌ Не удалось изменить исполнителя."
-        )
+        await message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¸Ð·Ð¼ÐµÐ½Ð¸ÑÑ Ð¸ÑÐ¿Ð¾Ð»Ð½Ð¸ÑÐµÐ»Ñ.")
 
 
-# =========================================================
-# TITLE
-# =========================================================
-
-@dp.callback_query(
-    F.data == "edit_tag_title"
-)
-async def ask_title(
-    callback: CallbackQuery,
-    state: FSMContext,
-):
+@dp.callback_query(F.data == "edit_tag_title")
+async def ask_title(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
-    await state.set_state(
-        StudioStates.waiting_for_title
-    )
-
-    await callback.message.answer(
-        get_txt(
-            safe_lang(session),
-            "ask_title",
-        )
-    )
+    session = session_mgr.get_session(callback.from_user.id)
+    await state.set_state(StudioStates.waiting_for_title)
+    await callback.message.answer(get_txt(safe_lang(session), "ask_title"))
 
 
-@dp.message(
-    StudioStates.waiting_for_title
-)
-async def process_new_title(
-    message: types.Message,
-    state: FSMContext,
-):
+@dp.message(StudioStates.waiting_for_title)
+async def process_new_title(message: types.Message, state: FSMContext):
     if not message.text:
-        await message.answer(
-            "❌ Отправьте название текстом."
-        )
+        await message.answer("â ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ ÑÐµÐºÑÑÐ¾Ð¼.")
         return
-
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
-
-    preview = (
-        session.copy_current_to_preview(
-            ".mp3"
-        )
-    )
-
+    session = session_mgr.get_session(message.from_user.id)
+    preview = session.copy_current_to_preview(".mp3")
     if not preview:
         await state.clear()
-        await message.answer(
-            "❌ Аудиофайл не найден."
-        )
+        await message.answer("â ÐÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½.")
         return
-
     try:
         audio = music_tag.load_file(preview)
         audio["title"] = message.text.strip()
         audio.save()
-
         await state.clear()
-
         info = get_audio_info(preview)
-
         await message.answer_audio(
-            audio=FSInputFile(preview),
-            title=info["title"],
-            performer=info["artist"],
-            caption=get_txt(
-                safe_lang(session),
-                "preview_audio_title",
-            ),
-            reply_markup=get_preview_keyboard(
-                safe_lang(session)
-            ),
+            audio=FSInputFile(preview), title=info["title"], performer=info["artist"],
+            caption=get_txt(safe_lang(session), "preview_audio_title"),
+            reply_markup=get_preview_keyboard(safe_lang(session)),
         )
-
     except Exception:
-        logger.exception(
-            "Title editing failed"
-        )
-
+        logger.exception("Title editing failed")
         session.cancel_preview()
         await state.clear()
-
-        await message.answer(
-            "❌ Не удалось изменить название."
-        )
+        await message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¸Ð·Ð¼ÐµÐ½Ð¸ÑÑ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ.")
 
 
-# =========================================================
-# ALBUM
-# =========================================================
-
-@dp.callback_query(
-    F.data == "edit_tag_album"
-)
-async def ask_album(
-    callback: CallbackQuery,
-    state: FSMContext,
-):
+@dp.callback_query(F.data == "edit_tag_album")
+async def ask_album(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
-    await state.set_state(
-        StudioStates.waiting_for_album
-    )
-
-    await callback.message.answer(
-        get_txt(
-            safe_lang(session),
-            "ask_album",
-        )
-    )
+    session = session_mgr.get_session(callback.from_user.id)
+    await state.set_state(StudioStates.waiting_for_album)
+    await callback.message.answer(get_txt(safe_lang(session), "ask_album"))
 
 
-@dp.message(
-    StudioStates.waiting_for_album
-)
-async def process_new_album(
-    message: types.Message,
-    state: FSMContext,
-):
+@dp.message(StudioStates.waiting_for_album)
+async def process_new_album(message: types.Message, state: FSMContext):
     if not message.text:
-        await message.answer(
-            "❌ Отправьте название альбома текстом."
-        )
+        await message.answer("â ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ Ð°Ð»ÑÐ±Ð¾Ð¼Ð° ÑÐµÐºÑÑÐ¾Ð¼.")
         return
-
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
-
-    preview = (
-        session.copy_current_to_preview(
-            ".mp3"
-        )
-    )
-
+    session = session_mgr.get_session(message.from_user.id)
+    preview = session.copy_current_to_preview(".mp3")
     if not preview:
         await state.clear()
-        await message.answer(
-            "❌ Аудиофайл не найден."
-        )
+        await message.answer("â ÐÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½.")
         return
-
     try:
         audio = music_tag.load_file(preview)
         audio["album"] = message.text.strip()
         audio.save()
-
         await state.clear()
-
         info = get_audio_info(preview)
-
         await message.answer_audio(
-            audio=FSInputFile(preview),
-            title=info["title"],
-            performer=info["artist"],
-            caption=get_txt(
-                safe_lang(session),
-                "preview_audio_title",
-            ),
-            reply_markup=get_preview_keyboard(
-                safe_lang(session)
-            ),
+            audio=FSInputFile(preview), title=info["title"], performer=info["artist"],
+            caption=get_txt(safe_lang(session), "preview_audio_title"),
+            reply_markup=get_preview_keyboard(safe_lang(session)),
         )
-
     except Exception:
-        logger.exception(
-            "Album editing failed"
-        )
-
+        logger.exception("Album editing failed")
         session.cancel_preview()
         await state.clear()
-
-        await message.answer(
-            "❌ Не удалось изменить альбом."
-        )
+        await message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¸Ð·Ð¼ÐµÐ½Ð¸ÑÑ Ð°Ð»ÑÐ±Ð¾Ð¼.")
 
 
-# =========================================================
-# COVER
-# =========================================================
-
-@dp.callback_query(
-    F.data == "edit_tag_cover"
-)
-async def ask_cover(
-    callback: CallbackQuery,
-    state: FSMContext,
-):
+@dp.callback_query(F.data == "edit_tag_cover")
+async def ask_cover(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
-    await state.set_state(
-        StudioStates.waiting_for_cover
-    )
-
-    await callback.message.answer(
-        get_txt(
-            safe_lang(session),
-            "ask_cover",
-        )
-    )
+    session = session_mgr.get_session(callback.from_user.id)
+    await state.set_state(StudioStates.waiting_for_cover)
+    await callback.message.answer(get_txt(safe_lang(session), "ask_cover"))
 
 
-@dp.message(
-    StudioStates.waiting_for_cover,
-    F.photo,
-)
-async def process_new_cover(
-    message: types.Message,
-    state: FSMContext,
-):
-    session = session_mgr.get_session(
-        message.from_user.id
-    )
-
-    preview = (
-        session.copy_current_to_preview(
-            ".mp3"
-        )
-    )
-
+@dp.message(StudioStates.waiting_for_cover, F.photo)
+async def process_new_cover(message: types.Message, state: FSMContext):
+    session = session_mgr.get_session(message.from_user.id)
+    preview = session.copy_current_to_preview(".mp3")
     if not preview:
         await state.clear()
-        await message.answer(
-            "❌ Аудиофайл не найден."
-        )
+        await message.answer("â ÐÑÐ´Ð¸Ð¾ÑÐ°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½.")
         return
 
-    cover_path = (
-        DOWNLOAD_DIR
-        / f"{message.from_user.id}_cover.jpg"
-    )
-
+    cover_path = DOWNLOAD_DIR / f"{message.from_user.id}_cover.jpg"
     try:
-        await bot.download(
-            message.photo[-1],
-            destination=str(cover_path),
-        )
-
+        await bot.download(message.photo[-1], destination=str(cover_path))
         audio = music_tag.load_file(preview)
-
-        with open(
-            cover_path,
-            "rb",
-        ) as image:
+        with open(cover_path, "rb") as image:
             audio["artwork"] = image.read()
-
         audio.save()
-
         await state.clear()
-
         info = get_audio_info(preview)
-
         await message.answer_audio(
-            audio=FSInputFile(preview),
-            title=info["title"],
-            performer=info["artist"],
-            caption=get_txt(
-                safe_lang(session),
-                "preview_audio_title",
-            ),
-            reply_markup=get_preview_keyboard(
-                safe_lang(session)
-            ),
+            audio=FSInputFile(preview), title=info["title"], performer=info["artist"],
+            caption=get_txt(safe_lang(session), "preview_audio_title"),
+            reply_markup=get_preview_keyboard(safe_lang(session)),
         )
-
     except Exception:
-        logger.exception(
-            "Cover editing failed"
-        )
-
+        logger.exception("Cover editing failed")
         session.cancel_preview()
         await state.clear()
-
-        await message.answer(
-            "❌ Не удалось изменить обложку."
-        )
-
+        await message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¸Ð·Ð¼ÐµÐ½Ð¸ÑÑ Ð¾Ð±Ð»Ð¾Ð¶ÐºÑ.")
     finally:
         if cover_path.exists():
             try:
@@ -1097,221 +646,115 @@ async def process_new_cover(
                 pass
 
 
-@dp.message(
-    StudioStates.waiting_for_cover
-)
-async def invalid_cover(
-    message: types.Message,
-):
-    await message.answer(
-        "❌ Отправьте изображение как фото."
-    )
+@dp.message(StudioStates.waiting_for_cover)
+async def invalid_cover(message: types.Message):
+    await message.answer("â ÐÑÐ¿ÑÐ°Ð²ÑÑÐµ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ðµ ÐºÐ°Ðº ÑÐ¾ÑÐ¾.")
 
 
 # =========================================================
 # PREVIEW
 # =========================================================
 
-@dp.callback_query(
-    F.data == "preview_apply"
-)
-async def process_preview_apply(
-    callback: CallbackQuery,
-):
-    await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
+@dp.callback_query(F.data == "preview_apply")
+async def process_preview_apply(callback: CallbackQuery):
+    session = session_mgr.get_session(callback.from_user.id)
     lang = safe_lang(session)
 
     if not session.apply_preview():
-        await callback.message.answer(
-            "❌ Preview больше недоступен."
-        )
+        await callback.answer("â Preview Ð±Ð¾Ð»ÑÑÐµ Ð½ÐµÐ´Ð¾ÑÑÑÐ¿ÐµÐ½.", show_alert=True)
         return
 
-    await callback.message.answer(
-        get_saved_text(lang)
-    )
-
-    await send_main_menu(
-        callback.message,
-        callback.from_user.id,
-    )
-
-
-@dp.callback_query(
-    F.data == "preview_cancel"
-)
-async def process_preview_cancel(
-    callback: CallbackQuery,
-):
     await callback.answer()
 
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
+    # Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Ñ Ð¸ÑÐ¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð¿ÑÐµÐ´Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ°.
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        logger.exception("Could not remove preview keyboard after apply")
 
+    await callback.message.answer(get_saved_text(lang))
+    await send_main_menu(callback.message, callback.from_user.id)
+
+
+@dp.callback_query(F.data == "preview_cancel")
+async def process_preview_cancel(callback: CallbackQuery):
+    session = session_mgr.get_session(callback.from_user.id)
     lang = safe_lang(session)
 
     session.cancel_preview()
+    await callback.answer()
 
-    await callback.message.answer(
-        get_cancelled_text(lang)
-    )
+    # ÐÐ¾ÑÐ»Ðµ Ð¾ÑÐ¼ÐµÐ½Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Ð¿ÑÐµÐ´Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ° ÑÐ¾Ð¶Ðµ Ð±Ð¾Ð»ÑÑÐµ Ð½Ðµ Ð½ÑÐ¶Ð½Ñ.
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        logger.exception("Could not remove preview keyboard after cancel")
 
-    await send_main_menu(
-        callback.message,
-        callback.from_user.id,
-    )
+    await callback.message.answer(get_cancelled_text(lang))
+    await send_main_menu(callback.message, callback.from_user.id)
 
 
 # =========================================================
 # UNDO
 # =========================================================
 
-@dp.callback_query(
-    F.data == "undo_edit"
-)
-async def process_undo(
-    callback: CallbackQuery,
-):
+@dp.callback_query(F.data == "undo_edit")
+async def process_undo(callback: CallbackQuery):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
+    session = session_mgr.get_session(callback.from_user.id)
     if session.undo():
-        await callback.message.answer(
-            "↩️ Последнее изменение отменено."
-        )
+        await callback.message.answer("â©ï¸ ÐÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ Ð¾ÑÐ¼ÐµÐ½ÐµÐ½Ð¾.")
     else:
-        await callback.message.answer(
-            "ℹ️ Пока нечего отменять."
-        )
-
-    await send_main_menu(
-        callback.message,
-        callback.from_user.id,
-    )
+        await callback.message.answer("â¹ï¸ ÐÐ¾ÐºÐ° Ð½ÐµÑÐµÐ³Ð¾ Ð¾ÑÐ¼ÐµÐ½ÑÑÑ.")
+    await send_main_menu(callback.message, callback.from_user.id)
 
 
 # =========================================================
 # EXPORT
 # =========================================================
 
-@dp.callback_query(
-    F.data == "menu_export"
-)
-async def process_export(
-    callback: CallbackQuery,
-):
+@dp.callback_query(F.data == "menu_export")
+async def process_export(callback: CallbackQuery):
     await callback.answer()
-
-    session = session_mgr.get_session(
-        callback.from_user.id
-    )
-
+    session = session_mgr.get_session(callback.from_user.id)
     lang = safe_lang(session)
-
     if not session.has_track():
-        await callback.message.answer(
-            get_no_track_text(lang)
-        )
+        await callback.message.answer(get_no_track_text(lang))
         return
-
-    info = get_audio_info(
-        session.current_file
-    )
-
-    artist = (
-        info["artist"]
-        if info["artist"] != "Unknown"
-        else "Unknown Artist"
-    )
-
-    title = (
-        info["title"]
-        if info["title"] != "Unknown"
-        else "Track"
-    )
-
-    safe_filename = (
-        f"{artist} - {title}.mp3"
-        .replace("/", "-")
-        .replace("\\", "-")
-    )
-
+    info = get_audio_info(session.current_file)
+    artist = info["artist"] if info["artist"] != "Unknown" else "Unknown Artist"
+    title = info["title"] if info["title"] != "Unknown" else "Track"
+    safe_filename = f"{artist} - {title}.mp3".replace("/", "-").replace("\\", "-")
     try:
         await callback.message.answer_audio(
-            audio=FSInputFile(
-                session.current_file,
-                filename=safe_filename,
-            ),
-            title=title,
-            performer=artist,
-            caption=get_txt(
-                lang,
-                "export_ready",
-            ),
+            audio=FSInputFile(session.current_file, filename=safe_filename),
+            title=title, performer=artist, caption=get_txt(lang, "export_ready"),
         )
-
     except Exception:
-        logger.exception(
-            "Export failed"
-        )
-
-        await callback.message.answer(
-            "❌ Не удалось отправить файл."
-        )
+        logger.exception("Export failed")
+        await callback.message.answer("â ÐÐµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¾ÑÐ¿ÑÐ°Ð²Ð¸ÑÑ ÑÐ°Ð¹Ð».")
 
 
 # =========================================================
 # MAIN MENU
 # =========================================================
 
-@dp.callback_query(
-    F.data == "main_menu"
-)
-async def process_main_menu(
-    callback: CallbackQuery,
-):
+@dp.callback_query(F.data == "main_menu")
+async def process_main_menu(callback: CallbackQuery):
     await callback.answer()
-
-    await edit_main_menu(
-        callback.message,
-        callback.from_user.id,
-    )
+    await edit_main_menu(callback.message, callback.from_user.id)
 
 
 # =========================================================
 # TEMPORARY HANDLERS FOR NEXT MODULES
 # =========================================================
 
-@dp.callback_query(
-    F.data.in_(
-        {
-            "menu_effects",
-            "menu_trim",
-            "menu_speed",
-            "menu_stems",
-            "menu_video",
-            "menu_kenny_id",
-            "menu_improve",
-            "menu_settings",
-        }
-    )
-)
-async def module_in_development(
-    callback: CallbackQuery,
-):
-    await callback.answer(
-        "🛠 Этот модуль подключим следующим.",
-        show_alert=True,
-    )
+@dp.callback_query(F.data.in_({
+    "menu_effects", "menu_trim", "menu_speed", "menu_stems",
+    "menu_video", "menu_kenny_id", "menu_improve", "menu_settings",
+}))
+async def module_in_development(callback: CallbackQuery):
+    await callback.answer("ð  Ð­ÑÐ¾Ñ Ð¼Ð¾Ð´ÑÐ»Ñ Ð¿Ð¾Ð´ÐºÐ»ÑÑÐ¸Ð¼ ÑÐ»ÐµÐ´ÑÑÑÐ¸Ð¼.", show_alert=True)
 
 
 # =========================================================
@@ -1319,48 +762,19 @@ async def module_in_development(
 # =========================================================
 
 async def handle_ping(request):
-    return web.Response(
-        text="Kenny Studio is online!"
-    )
+    return web.Response(text="Kenny Studio is online!")
 
 
 async def start_web_server():
     app = web.Application()
-
-    app.router.add_get(
-        "/",
-        handle_ping,
-    )
-
-    app.router.add_get(
-        "/health",
-        handle_ping,
-    )
-
+    app.router.add_get("/", handle_ping)
+    app.router.add_get("/health", handle_ping)
     runner = web.AppRunner(app)
-
     await runner.setup()
-
-    port = int(
-        os.environ.get(
-            "PORT",
-            8080,
-        )
-    )
-
-    site = web.TCPSite(
-        runner,
-        "0.0.0.0",
-        port,
-    )
-
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-
-    logger.info(
-        "Health server started on port %s",
-        port,
-    )
-
+    logger.info("Health server started on port %s", port)
     return runner
 
 
@@ -1369,19 +783,11 @@ async def start_web_server():
 # =========================================================
 
 async def main():
-    logger.info(
-        "Starting Kenny Studio..."
-    )
-
+    logger.info("Starting Kenny Studio...")
     runner = await start_web_server()
-
     try:
-        await bot.delete_webhook(
-            drop_pending_updates=True
-        )
-
+        await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
-
     finally:
         await bot.session.close()
         await runner.cleanup()
