@@ -135,29 +135,21 @@ def make_vinyl_video(audio_path: str) -> str:
     artwork = f['artwork']
     
     cover_path = audio_path.replace(".mp3", "_temp_cover.jpg")
-    has_cover = False
     
     if artwork and artwork.value:
         with open(cover_path, "wb") as img_file:
             img_file.write(artwork.value.data)
-        has_cover = True
-    
-    if not has_cover:
-        cmd_img = [
-            FFMPEG_PATH, '-y', '-f', 'lavfi', '-i', 'color=c=0x1a1a1a:s=600x600',
-            '-vframes', '1', cover_path
-        ]
-        run_ffmpeg(cmd_img)
 
     cmd = [
         FFMPEG_PATH, '-y',
         '-loop', '1', '-i', cover_path,
         '-i', audio_path,
         '-filter_complex',
-        "[0:v]scale=600:600,format=qtrgb,rotate=2*PI*t/4:c=black@0:ow=rotw(iw):oh=roth(ih),format=yuv420p[v]",
+        "[0:v]scale=600:600,rotate=2*PI*t/4:ow=600:oh=600:c=black,format=yuv420p[v]",
         '-map', '[v]', '-map', '1:a',
-        '-c:v', 'libx264', '-shortest', '-pix_fmt', 'yuv420p',
-        output_video
+        '-c:v', 'libx264', '-preset', 'ultrafast',
+        '-c:a', 'aac', '-b:a', '192k',
+        '-shortest', output_video
     ]
     run_ffmpeg(cmd)
 
@@ -295,7 +287,19 @@ async def process_callbacks(callback: CallbackQuery, state: FSMContext):
         )
 
     elif data == "effect_vinyl":
-        msg = await callback.message.answer("🎬 *Генерирую видео с вращающейся пластинкой...* Это займет немного времени.")
+        f = music_tag.load_file(file_path)
+        artwork = f['artwork']
+        
+        if not artwork or not artwork.value:
+            await state.set_state(AudioEdit.waiting_for_cover)
+            await callback.message.answer(
+                "🖼 *У этого трека нет обложки!*\n\n"
+                "Пришлите фотографию или картинку прямо сейчас, чтобы сделать видео с пластинкой:"
+            )
+            await callback.answer()
+            return
+
+        msg = await callback.message.answer("🎬 *Генерирую видео с пластинкой...* Пожалуйста, подождите.")
         loop = asyncio.get_event_loop()
         try:
             video_path = await loop.run_in_executor(None, make_vinyl_video, file_path)
@@ -436,7 +440,7 @@ async def set_trim(message: types.Message, state: FSMContext):
             FSInputFile(new_path),
             title=title,
             performer=artist,
-            caption="✂️ *Рингтон (30 секунд) успешно создан!*",
+            caption="✂️️ *Рингтон (30 секунд) успешно создан!*",
             reply_markup=get_editor_keyboard()
         )
     except:
