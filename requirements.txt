@@ -1,6 +1,6 @@
-aiogram
-yt-dlp
-static-ffmpeg
+aiogram==3.4.1
+imageio-ffmpeg
 music-tag
-requests
+yt-dlp
 aiohttp
+requests
