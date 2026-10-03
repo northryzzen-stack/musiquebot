@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = "8927203299:AAFTXi8T5EjSe9gB3L-ivPTVv0TeEICK0U"
 
-# Путь к FFmpeg из готового бинарника (без скачивания при старте)
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
 bot = Bot(token=BOT_TOKEN)
@@ -258,6 +257,8 @@ async def main():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
+    # Сброс прошлых зависших сессий
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
