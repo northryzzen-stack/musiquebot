@@ -1,6 +1,6 @@
-aiogram==3.4.1
-imageio-ffmpeg
+aiogram>=3.0.0
 music-tag
+Pillow
 yt-dlp
+imageio-ffmpeg
 aiohttp
-requests
