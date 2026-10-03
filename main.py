@@ -22,7 +22,7 @@ from i18n import get_txt
 
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8300695982:AAG7t80QBHMZGA041C3IRI2qcuX7CcK4YD8")
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 REQUIRED_CHANNEL_ID = os.environ.get("REQUIRED_CHANNEL_ID", "")
 REQUIRED_CHANNEL_URL = os.environ.get("REQUIRED_CHANNEL_URL", "https://t.me/telegram")
 
