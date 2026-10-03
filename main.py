@@ -15,7 +15,7 @@ from aiogram.types import FSInputFile, InlineKeyboardButton, InlineKeyboardMarku
 
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = "8927203299:AAFTXi8T5EjSe9gB3L-ivPTVv0TeEICK0U"
+BOT_TOKEN = os.environ.get("BOT_TOKEN") 
 
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
