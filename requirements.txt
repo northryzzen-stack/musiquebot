@@ -1,6 +1,6 @@
-aiogram==3.4.1
-music-tag==0.4.3
+aiogram
 yt-dlp
-static-ffmpeg==2.5
-aiohttp==3.9.3
-requests==2.31.0
+static-ffmpeg
+music-tag
+requests
+aiohttp
