@@ -1,10 +1,10 @@
 import os
 import logging
 import subprocess
-import requests
+import asyncio
 import music_tag
 import yt_dlp
-import static_ffmpeg
+import imageio_ffmpeg
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
@@ -13,12 +13,12 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
-# Инициализация FFmpeg
-static_ffmpeg.add_paths()
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = "8927203299:AAFTXi8T5EjSe9gB3L-ivPTVv0TeEICK0U"
-MAX_DURATION_SEC = 600
+
+# Путь к FFmpeg из готового бинарника (без скачивания при старте)
+FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
@@ -26,7 +26,6 @@ dp = Dispatcher(storage=MemoryStorage())
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
-# --- Состояния FSM ---
 class AudioEdit(StatesGroup):
     waiting_for_title = State()
     waiting_for_artist = State()
@@ -35,20 +34,6 @@ class AudioEdit(StatesGroup):
     waiting_for_speed = State()
     waiting_for_trim = State()
 
-# --- Веб-сервер для поддержки Render (Keep-Alive) ---
-async def handle_ping(request):
-    return web.Response(text="Bot is alive!")
-
-async def start_web_server():
-    app = web.Application()
-    app.router.add_get("/", handle_ping)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    port = int(os.environ.get("PORT", 8080))
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    await site.start()
-
-# --- Вспомогательные функции обработки аудио ---
 def get_editor_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -74,7 +59,7 @@ def get_editor_keyboard():
 def apply_slowed_reverb(input_path: str) -> str:
     output_path = input_path.replace(".mp3", "_slowed.mp3")
     cmd = [
-        'ffmpeg', '-y', '-i', input_path,
+        FFMPEG_PATH, '-y', '-i', input_path,
         '-filter_complex', 'atempo=0.85,aecho=0.8:0.88:60:0.4',
         output_path
     ]
@@ -84,7 +69,7 @@ def apply_slowed_reverb(input_path: str) -> str:
 def change_speed(input_path: str, speed: float) -> str:
     output_path = input_path.replace(".mp3", f"_{speed}.mp3")
     cmd = [
-        'ffmpeg', '-y', '-i', input_path,
+        FFMPEG_PATH, '-y', '-i', input_path,
         '-filter:a', f'atempo={speed}',
         output_path
     ]
@@ -94,37 +79,32 @@ def change_speed(input_path: str, speed: float) -> str:
 def trim_audio(input_path: str, start_sec: int, duration_sec: int = 30) -> str:
     output_path = input_path.replace(".mp3", "_ringtone.mp3")
     cmd = [
-        'ffmpeg', '-y', '-ss', str(start_sec), '-i', input_path,
+        FFMPEG_PATH, '-y', '-ss', str(start_sec), '-i', input_path,
         '-t', str(duration_sec), '-c', 'copy', output_path
     ]
     subprocess.run(cmd, check=True)
     return output_path
 
-# --- Хэндлеры бота ---
 @dp.message(CommandStart())
 async def start_cmd(message: types.Message):
     await message.answer(
-        "👋 **Привет! Я универсальный Аудио-Бота Редактор.**\n\n"
+        "👋 **Привет! Я универсальный Аудио Редактор.**\n\n"
         "Пришли мне:\n"
         "1. **Любой MP3 или Голосовое сообщение** — для обработки и изменения метаданных.\n"
-        "2. **Ссылку на TikTok / Pinterest / VK** — чтобы выгрузить чистый аудиозапись!"
+        "2. **Ссылку на TikTok / Pinterest / VK** — чтобы выгрузить аудиозапись!"
     )
 
-# Приём файлов и голосовых
 @dp.message(F.audio | F.voice | F.document)
 async def handle_audio_file(message: types.Message, state: FSMContext):
     msg = await message.answer("⏳ Загружаю и подготавливаю файл...")
-    file_id = message.audio.file_id if message.audio else (message.voice.file_id if message.voice else message.document.file_id)
-    file_info = await bot.get_file(file_id)
-    
+    target_obj = message.audio or message.voice or message.document
     user_file_path = f"downloads/{message.from_user.id}_current.mp3"
-    await bot.download_file(file_info.file_path, user_file_path)
     
+    await bot.download(target_obj, destination=user_file_path)
     await state.update_data(file_path=user_file_path)
     await msg.delete()
     await message.answer("🎵 **Файл загружен!** Выберите действие в меню ниже:", reply_markup=get_editor_keyboard())
 
-# Приём ссылок (TikTok, Pinterest, SoundCloud)
 @dp.message(F.text.startswith("http"))
 async def handle_links(message: types.Message, state: FSMContext):
     msg = await message.answer("⏳ Извлекаю аудио из ссылки...")
@@ -132,6 +112,7 @@ async def handle_links(message: types.Message, state: FSMContext):
     
     ydl_opts = {
         'format': 'bestaudio/best',
+        'ffmpeg_location': FFMPEG_PATH,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -142,15 +123,15 @@ async def handle_links(message: types.Message, state: FSMContext):
     }
     
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([message.text])
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, lambda: yt_dlp.YoutubeDL(ydl_opts).download([message.text]))
         await state.update_data(file_path=user_file_path)
         await msg.delete()
         await message.answer("✅ **Аудио извлечено!** Что с ним сделать?", reply_markup=get_editor_keyboard())
     except Exception as e:
+        logging.error(f"Error downloading: {e}")
         await msg.edit_text("❌ Ошибка при скачивании по ссылке. Убедитесь, что ссылка ведет на TikTok, Pinterest или SoundCloud.")
 
-# --- Обработка нажатий на меню ---
 @dp.callback_query()
 async def process_callbacks(callback: CallbackQuery, state: FSMContext):
     data = callback.data
@@ -197,7 +178,6 @@ async def process_callbacks(callback: CallbackQuery, state: FSMContext):
         )
     await callback.answer()
 
-# --- Приём введенных значений ---
 @dp.message(AudioEdit.waiting_for_title)
 async def set_title(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
@@ -266,11 +246,19 @@ async def set_trim(message: types.Message, state: FSMContext):
     except:
         await message.answer("❌ Введите целое число секунд (например `30`)")
 
-# --- Запуск ---
+async def handle_ping(request):
+    return web.Response(text="Bot is alive!")
+
 async def main():
-    await start_web_server()
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
